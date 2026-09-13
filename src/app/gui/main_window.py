@@ -18,6 +18,8 @@ from src.models.model_manager import ModelManager
 from src.app.image_utils import ImageInfo, is_supported_image, get_supported_formats_filter
 from src.app.gui.widgets.image_display import ImageDisplayWidget
 from src.app.gui.dialogs.settings_dialog import SettingsDialog
+from src.app.gui.dialogs.system_info_dialog import SystemInformationDialog
+from src.app.gui.dialogs.model_manager_dialog import ModelManagementDialog
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +79,13 @@ class MainWindow(QMainWindow):
         system_info_action = QAction("&System Information", self)
         system_info_action.triggered.connect(self._show_system_info)
         view_menu.addAction(system_info_action)
+        
+        # Models menu
+        models_menu = menubar.addMenu("&Models")
+        
+        manage_models_action = QAction("&Manage Models", self)
+        manage_models_action.triggered.connect(self._manage_models)
+        models_menu.addAction(manage_models_action)
         
         # Help menu
         help_menu = menubar.addMenu("&Help")
@@ -290,14 +299,8 @@ class MainWindow(QMainWindow):
     
     def _show_system_info(self):
         """Show system information."""
-        info_text = hardware_info.get_summary()
-        
-        msg = QMessageBox(self)
-        msg.setWindowTitle("System Information")
-        msg.setText(info_text)
-        msg.setFont(self.font())
-        msg.setStyleSheet("QMessageBox { messagebox-text-interaction-flags: Qt::TextSelectableByMouse; }")
-        msg.exec()
+        dialog = SystemInformationDialog(hardware_info, self)
+        dialog.exec()
     
     def _show_about(self):
         """Show about dialog."""
@@ -308,6 +311,12 @@ A standalone, offline-first Python desktop GUI that converts
 a single 2D photograph into an interactive 2.5D/3D parallax photo.
         """
         QMessageBox.about(self, "About Altum", about_text)
+    
+    def _manage_models(self):
+        """Open model management dialog."""
+        logger.info("Opening model management dialog")
+        dialog = ModelManagementDialog(self.model_manager, self)
+        dialog.exec()
     
     # Processing actions
     def _generate_depth(self):
