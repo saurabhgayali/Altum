@@ -7,7 +7,7 @@ from pathlib import Path
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget,
     QPushButton, QLabel, QStatusBar, QMenuBar, QMenu, QFileDialog,
-    QMessageBox, QSplitter, QTextEdit
+    QMessageBox, QSplitter, QTextEdit, QDialog
 )
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QAction
@@ -17,6 +17,7 @@ from src.hardware.gpu_detection import hardware_info
 from src.models.model_manager import ModelManager
 from src.app.image_utils import ImageInfo, is_supported_image, get_supported_formats_filter
 from src.app.gui.widgets.image_display import ImageDisplayWidget
+from src.app.gui.dialogs.settings_dialog import SettingsDialog
 
 logger = logging.getLogger(__name__)
 
@@ -282,7 +283,10 @@ class MainWindow(QMainWindow):
     def _open_settings(self):
         """Open settings dialog."""
         logger.info("Opening settings dialog")
-        QMessageBox.information(self, "Settings", "Settings dialog - to be implemented")
+        dialog = SettingsDialog(self.settings, self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            logger.info("Settings updated")
+            self.status_label.setText("Settings updated")
     
     def _show_system_info(self):
         """Show system information."""
