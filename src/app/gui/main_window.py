@@ -15,6 +15,8 @@ from PyQt6.QtGui import QIcon, QAction
 from src.app.settings.settings_manager import settings_manager
 from src.hardware.gpu_detection import hardware_info
 from src.models.model_manager import ModelManager
+from src.app.image_utils import ImageInfo, is_supported_image, get_supported_formats_filter
+from src.app.gui.widgets.image_display import ImageDisplayWidget
 
 logger = logging.getLogger(__name__)
 
@@ -123,17 +125,24 @@ class MainWindow(QMainWindow):
         open_btn.clicked.connect(self._open_photo)
         button_layout.addWidget(open_btn)
         
+        clear_btn = QPushButton("Clear")
+        clear_btn.clicked.connect(self._clear_image)
+        button_layout.addWidget(clear_btn)
+        
         button_layout.addStretch()
         layout.addLayout(button_layout)
         
-        # Image display area
-        self.image_label = QLabel("No image loaded")
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.image_label)
+        # Image display
+        self.image_display = ImageDisplayWidget()
+        layout.addWidget(self.image_display, stretch=1)
         
         # Image info
         self.image_info_label = QLabel("Image Information: None")
+        self.image_info_label.setStyleSheet("padding: 10px; background-color: #f0f0f0;")
         layout.addWidget(self.image_info_label)
+        
+        # Store current image info
+        self.current_image_info = None
         
         widget.setLayout(layout)
         return widget
@@ -223,13 +232,52 @@ class MainWindow(QMainWindow):
             self,
             "Open Photo",
             "",
-            "Image Files (*.jpg *.jpeg *.png *.bmp *.webp);;All Files (*)"
+            get_supported_formats_filter()
         )
         
-        if file_path:
-            logger.info(f"Opening photo: {file_path}")
-            self.status_label.setText(f"Opened: {Path(file_path).name}")
-            self.image_info_label.setText(f"Image: {Path(file_path).name}")
+        if not file_path:
+            return
+        
+        try:
+            file_path = Path(file_path)
+            
+            # Load image info
+            image_info = ImageInfo(file_path)
+            
+            # Validate image
+            is_valid, message = image_info.is_valid()
+            if not is_valid:
+                QMessageBox.warning(self, "Invalid Image", message)
+                logger.warning(f"Invalid image: {message}")
+                return
+            
+            # Display image
+            if not self.image_display.load_image(file_path):
+                QMessageBox.warning(self, "Error", "Could not load image")
+                return
+            
+            # Store image info
+            self.current_image_info = image_info
+            
+            # Update UI
+            self.image_info_label.setText(image_info.get_summary())
+            self.status_label.setText(f"Loaded: {file_path.name}")
+            self.tab_widget.setTabText(0, f"Image & Input - {file_path.name}")
+            
+            logger.info(f"Successfully opened image: {file_path.name}")
+            
+        except Exception as e:
+            logger.error(f"Error opening image: {e}")
+            QMessageBox.critical(self, "Error", f"Failed to open image: {e}")
+    
+    def _clear_image(self):
+        """Clear the current image."""
+        self.image_display.clear()
+        self.current_image_info = None
+        self.image_info_label.setText("Image Information: None")
+        self.status_label.setText("Ready")
+        self.tab_widget.setTabText(0, "Image & Input")
+        logger.info("Cleared current image")
     
     def _open_settings(self):
         """Open settings dialog."""
