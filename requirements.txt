@@ -1,0 +1,45 @@
+# Altum - Single-Image 3D Photo Generator
+# Core Dependencies
+
+# GUI Framework
+PyQt6==6.6.1
+PyQt6-sip==13.6.0
+
+# Deep Learning & AI
+torch==2.0.1
+torchvision==0.15.2
+torchaudio==2.0.2
+transformers==4.35.2
+diffusers==0.24.0
+accelerate==0.24.1
+safetensors==0.4.0
+
+# Image Processing
+pillow==10.0.1
+opencv-python==4.8.0.76
+numpy==1.24.3
+scipy==1.11.3
+
+# Model & Data Management
+huggingface-hub==0.17.3
+platformdirs==3.13.1
+pydantic==2.4.2
+
+# Utilities
+tqdm==4.66.1
+pyyaml==6.0.1
+
+# Optional GPU Support
+# Uncomment for NVIDIA GPU support
+# nvidia-cuda-runtime==11.8.89
+# nvidia-cudnn==8.7.0.84
+
+# Optional Apple Silicon Support
+# Uncomment for macOS Apple Silicon
+# tensorflow-metal==1.0.0
+
+# Development (optional)
+# pytest==7.4.3
+# black==23.10.0
+# pylint==3.0.2
+# mypy==1.6.1
